@@ -3,7 +3,7 @@ package com.yg
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL
 import kr.co.shineware.nlp.komoran.core.Komoran
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{explode, split, struct, udf}
 
@@ -98,8 +98,14 @@ object KorAnalyzer {
     val countResult = words.groupBy("word").count()
     countResult.sort(desc("count")).show(100)
 
+    println("-------------------------")
+    countResult.printSchema()
 
+    countResult.write.mode(SaveMode.Append).jdbc("jdbc:mysql://localhost:3306/horus?" +
+      "useUnicode=true&characterEncoding=utf8&useSSL=false",
+      "DOC_TF2", prop)
 
+    println("Writing to DB completed ..")
 
 
 //    println("with udf column ..")
