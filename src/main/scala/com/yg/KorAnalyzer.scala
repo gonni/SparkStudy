@@ -6,6 +6,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{explode, split, struct, udf}
+import org.apache.spark.sql.types.StructType
 
 import java.util.Properties
 import scala.collection.JavaConverters._
@@ -101,10 +102,23 @@ object KorAnalyzer {
     println("-------------------------")
     countResult.printSchema()
 
-    countResult.write.mode(SaveMode.Append).jdbc("jdbc:mysql://localhost:3306/horus?" +
-      "useUnicode=true&characterEncoding=utf8&useSSL=false",
-      "DOC_TF2", prop)
+//    val temp = countResult
+//      .withColumn("FREQ", $"count")
+//      .withColumn("WORD", $"word")
+//
+//    println("-------------------------")
+//    val finalResult = temp.select("WORD", "FREQ")
+//    finalResult.show(10)
 
+    val finalResult = countResult
+      .withColumnRenamed("word", "WORD")
+      .withColumnRenamed("count", "FREQ")
+
+    // save TF-data to DB
+    finalResult.write.mode(SaveMode.Append).jdbc("jdbc:mysql://localhost:3306/horus?" +
+      "useUnicode=true&characterEncoding=utf8&useSSL=false",
+      "NLP_TF2", prop)
+//
     println("Writing to DB completed ..")
 
 
