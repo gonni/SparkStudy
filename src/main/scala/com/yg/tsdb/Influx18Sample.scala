@@ -8,7 +8,6 @@ import akka.stream.ActorMaterializer
 import java.net.URLEncoder
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
-import scala.util.{Failure, Success}
 
 object Influx18Sample {
   implicit val system = ActorSystem()
@@ -39,29 +38,18 @@ object Influx18Sample {
 
   def sendRequest() = {
     val responseFuture: Future[HttpResponse] = Http().singleRequest(request)
-    responseFuture.onComplete{
-      case Success(res) => {
-          val entityFuture: Future[HttpEntity.Strict] = responseFuture.flatMap(_.entity.toStrict(2 seconds))
-          entityFuture.map(entity => entity.data.utf8String)
-      }
-      case Failure(_) => println("Error Response")
-    }
-    responseFuture.andThen{
-      case _ => {
-        println("Terminate system ..")
-        system.terminate()
-      }
-    }
+    val entityFuture: Future[HttpEntity.Strict] = responseFuture.flatMap(_.entity.toStrict(2 seconds))
+    entityFuture.map(entity => entity.data.utf8String)
   }
 
-//  def simpleRequest() = {
-//    val responseFuture = Http().singleRequest(request)
-//    responseFuture.flatMap(_.entity.toStrict(2 seconds)).map(_.data.utf8String).foreach(println)
-//  }
+  def simpleRequest() = {
+    val responseFuture = Http().singleRequest(request)
+    responseFuture.flatMap(_.entity.toStrict(2 seconds)).map(_.data.utf8String).foreach(println)
+  }
 
   def main(args: Array[String]): Unit = {
     println("Active")
-    sendRequest()
-//    sendRequest().foreach(println)
+
+    sendRequest().foreach(println)
   }
 }
