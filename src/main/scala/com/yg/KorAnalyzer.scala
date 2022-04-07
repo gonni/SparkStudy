@@ -110,16 +110,18 @@ object KorAnalyzer {
 //    val finalResult = temp.select("WORD", "FREQ")
 //    finalResult.show(10)
 
-    val finalResult = countResult
-      .withColumnRenamed("word", "WORD")
-      .withColumnRenamed("count", "FREQ")
 
-    // save TF-data to DB
-    finalResult.write.mode(SaveMode.Append).jdbc("jdbc:mysql://localhost:3306/horus?" +
-      "useUnicode=true&characterEncoding=utf8&useSSL=false",
-      "NLP_TF2", prop)
+//    val finalResult = countResult
+//      .withColumnRenamed("word", "WORD")
+//      .withColumnRenamed("count", "FREQ")
 //
-    println("Writing to DB completed ..")
+//    // save TF-data to DB
+//    finalResult.write.mode(SaveMode.Append).jdbc("jdbc:mysql://localhost:3306/horus?" +
+//      "useUnicode=true&characterEncoding=utf8&useSSL=false",
+//      "NLP_TF2", prop)
+////
+//    println("Writing to DB completed ..")
+
 
 
 //    println("with udf column ..")
