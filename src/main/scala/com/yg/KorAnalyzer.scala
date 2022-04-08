@@ -1,15 +1,18 @@
 package com.yg
 
+import com.yg.influx.InfluxHttpClient
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL
 import kr.co.shineware.nlp.komoran.core.Komoran
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.sql.{Encoders, Row, SaveMode, SparkSession}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.{explode, split, struct, udf}
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{StringType, StructType}
 
 import java.util.Properties
 import scala.collection.JavaConverters._
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.types._
 
 object KorAnalyzer {
   val komoran = new Komoran(DEFAULT_MODEL.LIGHT)
@@ -97,7 +100,24 @@ object KorAnalyzer {
     words.show(20)
     println("word count ==============")
     val countResult = words.groupBy("word").count()
-    countResult.sort(desc("count")).show(100)
+
+    // --------------
+//    countResult.sort(desc("count")).show(100)
+//    val schema = StructType(Seq(
+//      StructField("word", StringType),
+//      StructField("count", IntegerType)
+//    ))
+//    val encoder = RowEncoder(schema)
+//    countResult.rdd.map(row => {
+//      println(s"sorted -> ${row.getString(0)} : ${row.getLong(1)}")
+//    })
+
+    countResult.foreach(row => {
+//      println(s"sorted -> ${row.getString(0)} : ${row.getLong(1)}")
+      val a = InfluxHttpClient.writeData(s"rt_word_count,host=localhost,word=${row.getString(0)} value=${row.getLong(1)}")
+    })
+    // --------------
+
 
     println("-------------------------")
     countResult.printSchema()

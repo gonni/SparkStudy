@@ -32,7 +32,7 @@ object InfluxHttpClient {
 
   def main(args: Array[String]): Unit = {
     println("Active System ..")
-    writeData("cpu_load_short,host=server09,region=ca-west value=0.64 1434055562000000000")
+    writeData("cpu_load_short02,host=server19,region=ca-west value=0.64 1434055562000000000")
     println("Closed ..")
 
 //    implicit val system = ActorSystem(Behaviors.empty, "SingleRequest")
