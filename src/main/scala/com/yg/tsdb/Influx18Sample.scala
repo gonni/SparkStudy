@@ -35,7 +35,7 @@ object Influx18Sample {
     entity = HttpEntity(
 //      ContentTypes.`application/x-www-form-urlencoded`,
 //      s"source=${URLEncoder.encode(source.trim, "UTF-8")}&language=Scala&theme=Sunburst"
-      s"cpu_load_short,host=server01,region=NCW value=96.69"
+      s"cpu_load_short1,host=server01,region=NCW,tst=13 value=96.69"
     )
   )
 
