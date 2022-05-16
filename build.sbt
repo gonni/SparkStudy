@@ -29,6 +29,6 @@ lazy val root = (project in file("."))
         // akka http
       "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
-      "com.influxdb" % "influxdb-client-scala_2.12" % "4.3.0"
+      "com.influxdb" % "influxdb-client-scala_2.12" % "6.0.0"
     )
   )

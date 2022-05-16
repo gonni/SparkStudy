@@ -114,7 +114,7 @@ object KorAnalyzer {
 
     countResult.foreach(row => {
 //      println(s"sorted -> ${row.getString(0)} : ${row.getLong(1)}")
-      val a = InfluxHttpClient.writeData(s"rt_word_count1,tst=13,host=localhost,word=${row.getString(0)} value=${row.getLong(1)}")
+      val a = InfluxHttpClient.writeData(s"rt_word_count1,tst=17,host=localhost,word=${row.getString(0)} value=${row.getLong(1)}")
     })
     // --------------
 
