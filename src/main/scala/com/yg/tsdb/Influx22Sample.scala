@@ -14,10 +14,10 @@ object Influx22Sample {
   implicit val system: ActorSystem = ActorSystem("it-tests")
 
   def main(args: Array[String]): Unit = {
-    println("Active System at " + new File(".").getAbsolutePath)
+//    println("Active System at " + new File(".").getAbsolutePath)
 
-    val myToken = "CwgQWYIZKOcSpdlxwpfZfvDWQXpsfTlt7o2GD5hFAs4rTvHDF-7cfwmIQnmdocqL__5uoabCFGuf_GYzFQfxIA==";
-    val myOrg = "xwaves"
+//    val myToken = "CwgQWYIZKOcSpdlxwpfZfvDWQXpsfTlt7o2GD5hFAs4rTvHDF-7cfwmIQnmdocqL__5uoabCFGuf_GYzFQfxIA==";
+//    val myOrg = "xwaves"
 
     val influxDBClient = InfluxDBClientScalaFactory.create()
 //      .create("http://localhost:8086", myToken.toCharArray, myOrg)
