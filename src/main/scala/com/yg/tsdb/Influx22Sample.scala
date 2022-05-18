@@ -28,10 +28,11 @@ object Influx22Sample {
 
     val writeApi: WriteApi = client.makeWriteApi(WriteOptions.builder().flushInterval(5000).build())
     val point = Point
-      .measurement("HellDb03")
+      .measurement("HellDb04")
       .addTag("host", "server01")
       .addTag("subKey", "abcd1234#")
       .addField("value", (Math.random() * 100).intValue())
+      .addField("val2", (Math.random() * 100).intValue())
 
     println(s"DataPoint to be added : ${point.toLineProtocol}")
     writeApi.writePoint(point)
