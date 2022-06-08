@@ -20,7 +20,9 @@ object Influx22Sample {
   def main(args: Array[String]): Unit = {
     println("Active System at " + new File(".").getAbsolutePath)
 
-    writeSomething
+//    writeSomething
+
+    readSomething
   }
 
   def writeSomething: Unit = {
@@ -52,7 +54,7 @@ object Influx22Sample {
 
     val fluxQuery = ("from(bucket: \"mydb\")\n"
       + " |> range(start: -1d)"
-      + " |> filter(fn: (r) => (r[\"_measurement\"] == \"HellDb\" and r[\"host\"] == \"myHost\"))")
+      + " |> filter(fn: (r) => (r[\"_measurement\"] == \"HellDb04\"))")
 
     //Result is returned as a stream
     val results = influxDBClient.getQueryScalaApi().query(fluxQuery)
