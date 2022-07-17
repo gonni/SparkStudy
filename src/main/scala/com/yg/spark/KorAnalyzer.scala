@@ -68,7 +68,7 @@ object KorAnalyzer {
     prop.put("user", "root")
     prop.put("password", "18651865")
 
-    val tableDf = spark.read.jdbc("jdbc:mysql://localhost:13306/horus?" +
+    val tableDf = spark.read.jdbc("jdbc:mysql://localhost:3306/horus?" +
       "useUnicode=true&characterEncoding=utf8&useSSL=false",
       "crawl_unit1", prop)
 
