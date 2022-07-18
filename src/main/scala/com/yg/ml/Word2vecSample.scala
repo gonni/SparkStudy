@@ -32,6 +32,28 @@ object Word2vecSample {
     komoran.analyze(sentence).getTokenList.asScala.map(x => x.toString)
   }
 
+  val getTokenListUdf2: UserDefinedFunction = udf[Seq[String], String] { sentence =>
+    try {
+      komoran.analyze(sentence).getTokenList.asScala.map(_.getMorph)
+    } catch {
+      case e: Exception => {
+        println("Detected Null Pointer .. " + e.getMessage)
+        Seq()
+      }
+    }
+
+//    if(sentence != null) {
+//      val analyzed = komoran.analyze(sentence)
+//      if(analyzed != null && analyzed.getTokenList != null) {
+//        analyzed.getTokenList.asScala.map(token => token.getMorph)
+//      } else {
+//        Seq()
+//      }
+//    } else {
+//      Seq()
+//    }
+  }
+
   def createModel = {
     val conf = new SparkConf()
       .setAppName("Mysql Selection")
@@ -53,21 +75,23 @@ object Word2vecSample {
 
     println("Data from mysql with new column ..")
     //    tableDf.withColumn("aa", $"ANCHOR_TEXT").show(15)
-    val tokenizedData = tableDf.filter($"SEED_NO" === 3).orderBy(desc("CRAWL_NO")).select($"ANCHOR_TEXT")
-      .withColumn("tokenized", getPlainTextUdf2($"ANCHOR_TEXT"))
+    val tokenizedData = tableDf.filter($"SEED_NO" === 9)
+      .orderBy(desc("CRAWL_NO"))
+      .select($"ANCHOR_TEXT",$"PAGE_TEXT")
+      .withColumn("tokenized", getTokenListUdf2($"PAGE_TEXT"))
 
     tokenizedData.show()
 
-    val word2Vec = (new Word2Vec()
+    val word2Vec = new Word2Vec()
       .setInputCol("tokenized")
       .setOutputCol("vector")
-      .setVectorSize(3)
-      .setMinCount(0))
+      .setVectorSize(200)
+      .setMinCount(8)
 //      .setMaxIter(8)
-//      .setNumPartitions(8))
+//      .setNumPartitions(8)
 
     val model = word2Vec.fit(tokenizedData)
-    model.save("data/w2vNews2")
+    model.save("data/w2vNews2Cont_200_8")
 
     val result = model.transform(tokenizedData)
 
@@ -83,7 +107,7 @@ object Word2vecSample {
   }
 
   def loadModelSample = {
-    val model = Word2VecModel.load("data/w2vNews2")
+    val model = Word2VecModel.load("data/w2vNews2Cont")
     model.getVectors.show(300)
     println("---------------------------------------")
     val synonyms = model.findSynonyms("대통령/NNG", 20)
@@ -92,16 +116,16 @@ object Word2vecSample {
   }
 
   def main(v: Array[String]): Unit = {
-    val conf = new SparkConf()
-      .setAppName("Mysql Selection")
-      .setMaster("local")
+//    val conf = new SparkConf()
+//      .setAppName("Mysql Selection")
+//      .setMaster("local")
+//
+//    val spark = SparkSession.builder.config(conf).getOrCreate()
+//    import spark.implicits._
+//
+//    println("Active System ..")
+//    loadModelSample
 
-    val spark = SparkSession.builder.config(conf).getOrCreate()
-    import spark.implicits._
-
-    println("Active System ..")
-    loadModelSample
-
-//    createModel
+    createModel
   }
 }

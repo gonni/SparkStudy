@@ -40,7 +40,9 @@ object Word2vecSample2 {
 
     println("Data from mysql with new column ..")
     //    tableDf.withColumn("aa", $"ANCHOR_TEXT").show(15)
-    val tokenizedData = tableDf.filter($"SEED_NO" === 3).orderBy(desc("CRAWL_NO")).select($"ANCHOR_TEXT")
+    val tokenizedData = tableDf.filter($"SEED_NO" === 9)
+      .orderBy(desc("CRAWL_NO"))
+      .select($"ANCHOR_TEXT")
       .withColumn("tokenized", getPlainTextUdf2($"ANCHOR_TEXT"))
 
 

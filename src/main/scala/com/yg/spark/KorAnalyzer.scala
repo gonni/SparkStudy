@@ -17,12 +17,21 @@ object KorAnalyzer {
     komoran.analyze(sentence).getPlainText
   }
 
+  val getPlainTextUdf2: UserDefinedFunction = udf[Seq[String], String] { sentence =>
+//    val komoran = new Komoran(DEFAULT_MODEL.LIGHT)
+    komoran.analyze(sentence).getPlainText.split("\\s")
+  }
+
   val getNounsUdf: UserDefinedFunction = udf[Seq[String], String] { sentence =>
     komoran.analyze(sentence).getNouns.asScala
   }
 
   val getTokenListUdf: UserDefinedFunction = udf[Seq[String], String] { sentence =>
     komoran.analyze(sentence).getTokenList.asScala.map(x => x.toString)
+  }
+
+  val getTokenListUdf2: UserDefinedFunction = udf[Seq[String], String] { sentence =>
+    komoran.analyze(sentence).getTokenList.asScala.map(token => token.getMorph)
   }
 
   val func = udf((s:String) => if(s.length > 30) "length:" + s.length else s)
@@ -50,33 +59,37 @@ object KorAnalyzer {
     val analyzedDataset =
       testDataset.withColumn("plain_text", getPlainTextUdf($"sentence"))
         .withColumn("nouns", getNounsUdf($"sentence"))
-        .withColumn("token_list", getTokenListUdf($"sentence"))
+        .withColumn("token_list", getTokenListUdf2($"sentence"))
+        .withColumn("plain_text2", getPlainTextUdf2($"sentence"))
 
     // 2. print test data and analyzed result as list
     analyzedDataset.select("sentence", "token_list").show()
 
-    // 3. print test data and morphes with selected pos
-    analyzedDataset.select("sentence", "nouns").show()
+//    // 3. print test data and morphes with selected pos
+//    analyzedDataset.select("sentence", "nouns").show()
+//
+//    // 4. print test data and analyzed result as pos-tagged text
+//    analyzedDataset.select("sentence", "plain_text").show()
+//
+//    println("----------------------")
+//    analyzedDataset.select("sentence", "plain_text2").show()
 
-    // 4. print test data and analyzed result as pos-tagged text
-    analyzedDataset.select("sentence", "plain_text").show()
 
 
 
-
-    val prop = new Properties()
-    prop.put("user", "root")
-    prop.put("password", "18651865")
-
-    val tableDf = spark.read.jdbc("jdbc:mysql://localhost:3306/horus?" +
-      "useUnicode=true&characterEncoding=utf8&useSSL=false",
-      "crawl_unit1", prop)
-
-    println("Data from mysql with new column ..")
-    tableDf.withColumn("aa", $"ANCHOR_TEXT").show(15)
-
-    println("with udf column ..")
-    tableDf.select($"CRAWL_NO", $"ANCHOR_TEXT", func($"ANCHOR_TEXT") as "XX").show(20)
+//    val prop = new Properties()
+//    prop.put("user", "root")
+//    prop.put("password", "18651865")
+//
+//    val tableDf = spark.read.jdbc("jdbc:mysql://localhost:3306/horus?" +
+//      "useUnicode=true&characterEncoding=utf8&useSSL=false",
+//      "crawl_unit1", prop)
+//
+//    println("Data from mysql with new column ..")
+//    tableDf.withColumn("aa", $"ANCHOR_TEXT").show(15)
+//
+//    println("with udf column ..")
+//    tableDf.select($"CRAWL_NO", $"ANCHOR_TEXT", func($"ANCHOR_TEXT") as "XX").show(20)
 
     //    tableDf.show(15)
     //    tableDf.createOrReplaceTempView("tempTable")
