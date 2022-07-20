@@ -1,16 +1,15 @@
-package com.yg.ml
+package com.yg.ml.prototypes
 
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL
 import kr.co.shineware.nlp.komoran.core.Komoran
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.feature.{Word2Vec, Word2VecModel}
-import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{desc, udf}
 
-import scala.collection.JavaConverters._
 import java.util.Properties
+import scala.jdk.CollectionConverters.asScalaBufferConverter
 
 object Word2vecSample {
   val komoran = new Komoran(DEFAULT_MODEL.LIGHT)
@@ -42,16 +41,16 @@ object Word2vecSample {
       }
     }
 
-//    if(sentence != null) {
-//      val analyzed = komoran.analyze(sentence)
-//      if(analyzed != null && analyzed.getTokenList != null) {
-//        analyzed.getTokenList.asScala.map(token => token.getMorph)
-//      } else {
-//        Seq()
-//      }
-//    } else {
-//      Seq()
-//    }
+    //    if(sentence != null) {
+    //      val analyzed = komoran.analyze(sentence)
+    //      if(analyzed != null && analyzed.getTokenList != null) {
+    //        analyzed.getTokenList.asScala.map(token => token.getMorph)
+    //      } else {
+    //        Seq()
+    //      }
+    //    } else {
+    //      Seq()
+    //    }
   }
 
   def createModel = {
@@ -77,7 +76,7 @@ object Word2vecSample {
     //    tableDf.withColumn("aa", $"ANCHOR_TEXT").show(15)
     val tokenizedData = tableDf.filter($"SEED_NO" === 9)
       .orderBy(desc("CRAWL_NO"))
-      .select($"ANCHOR_TEXT",$"PAGE_TEXT")
+      .select($"ANCHOR_TEXT", $"PAGE_TEXT")
       .withColumn("tokenized", getTokenListUdf2($"PAGE_TEXT"))
 
     tokenizedData.show()
@@ -85,23 +84,25 @@ object Word2vecSample {
     val word2Vec = new Word2Vec()
       .setInputCol("tokenized")
       .setOutputCol("vector")
-      .setVectorSize(200)
+      .setVectorSize(10)
       .setMinCount(8)
-//      .setMaxIter(8)
-//      .setNumPartitions(8)
+      .setWindowSize(7)
+      .setMaxIter(8)
+    //      .setMaxIter(8)
+    //      .setNumPartitions(8)
 
     val model = word2Vec.fit(tokenizedData)
-    model.save("data/w2vNews2Cont_200_8")
+    model.save("data/w2vNews2Cont_v10_m8_w7_it8")
 
     val result = model.transform(tokenizedData)
 
     println("---------------------------")
     result.show()
-//    result.collect().foreach {case Row(text: Seq[_], features: Vector) =>
-//      println(s"Text: [${text.mkString(", ")}] => \nVector: $features\n")}
+    //    result.collect().foreach {case Row(text: Seq[_], features: Vector) =>
+    //      println(s"Text: [${text.mkString(", ")}] => \nVector: $features\n")}
 
     println("---------------------------")
-    model.findSynonyms("대통령", 20).show()
+    model.findSynonyms("대통령", 30).show()
 
     println("Completed ..")
   }
@@ -116,15 +117,15 @@ object Word2vecSample {
   }
 
   def main(v: Array[String]): Unit = {
-//    val conf = new SparkConf()
-//      .setAppName("Mysql Selection")
-//      .setMaster("local")
-//
-//    val spark = SparkSession.builder.config(conf).getOrCreate()
-//    import spark.implicits._
-//
-//    println("Active System ..")
-//    loadModelSample
+    //    val conf = new SparkConf()
+    //      .setAppName("Mysql Selection")
+    //      .setMaster("local")
+    //
+    //    val spark = SparkSession.builder.config(conf).getOrCreate()
+    //    import spark.implicits._
+    //
+    //    println("Active System ..")
+    //    loadModelSample
 
     createModel
   }

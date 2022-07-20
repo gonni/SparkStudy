@@ -1,4 +1,4 @@
-package com.yg.ml
+package com.yg.ml.prototypes
 
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.clustering.LDA
@@ -12,7 +12,6 @@ object LdaClassifier {
       .setMaster("local")
 
     val spark = SparkSession.builder.config(conf).getOrCreate()
-    import spark.implicits._
 
     // Loads data.
     val dataset = spark.read.format("libsvm")
