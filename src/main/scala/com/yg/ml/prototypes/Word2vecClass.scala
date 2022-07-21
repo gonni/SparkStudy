@@ -91,10 +91,10 @@ object Word2vecClass {
 
     println("Active System ..")
     //    loadModelSample
-    val model = Word2VecModel.load("data/w2vNews2Cont_200_8")
+    val model = Word2VecModel.load("data/w2vNews2Cont_100_8")
 
     println("---------------------------------------")
-    var synonyms = model.findSynonyms("사건", 30)
+    var synonyms = model.findSynonyms("스포츠", 30)
     synonyms.show()
     println("---------------------------------------")
 
