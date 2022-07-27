@@ -102,7 +102,7 @@ object TopicAnalyzer {
       mapDist1 update (row.getAs[String](0).toString , weight)
     }
 
-    exRes.withColumn("BASE_WORD", Column.apply[String])
+//    exRes.withColumn("BASE_WORD", Column.apply[String])
 
 
 //    this.distMatrix.put(topicWord, mapDist1)
