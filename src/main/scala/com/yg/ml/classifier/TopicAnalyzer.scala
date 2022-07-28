@@ -29,8 +29,7 @@ object TopicAnalyzer {
   val revertDouble: UserDefinedFunction = udf((v: Double) => 1 - v)
 
   def init() = {
-//    val topics = Seq("경제", "사건", "대통령", "주식", "화폐", "화폐", "날씨", "북한", "이재명", "금리", "연봉", "코로나", "외계")
-    topics.foreach(saveCosData)
+    topics.distinct.foreach(saveCosData)
   }
 
   // distance 값 추출
