@@ -4,10 +4,9 @@ import com.yg.ml.prototypes.Word2vecSample.komoran
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL
 import kr.co.shineware.nlp.komoran.core.Komoran
 import org.apache.spark.ml.feature.Word2VecModel
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
-import org.apache.spark.sql.functions.{avg, stddev, udf, variance}
+import org.apache.spark.sql.functions.{avg, lit, stddev, typedLit, udf, variance}
 
 import java.util.Properties
 import scala.collection.mutable
@@ -24,97 +23,58 @@ object TopicAnalyzer {
     .getOrCreate()
 
   val model = Word2VecModel.load("data/w2vNews2Cont_100_8")
-  val topics = Seq("경제", "사건", "대통령", "주식", "화폐", "화폐", "날씨", "북한", "이재명", "금리", "연봉", "코로나")
+  val topics = Seq("경제", "사건", "대통령", "주식", "화폐", "사건",
+    "날씨", "북한", "이재명", "금리", "연봉", "코로나", "러시아", "IT")
+
   val revertDouble: UserDefinedFunction = udf((v: Double) => 1 - v)
-
-  var distMatrix = mutable.HashMap[String, mutable.Map[String, Double]]()
-
-  val komoran = new Komoran(DEFAULT_MODEL.LIGHT)
-
-  def analyzeTopic(sentence : String) : mutable.HashMap[String, Double] = {
-    val result = mutable.HashMap[String, Double]()
-    val tokens = komoran.analyze(sentence).getTokenList.asScala
-//    komoran.analyze(sentence).getTokenList.asScala.map(_.getMorph)
-    tokens.foreach(token => {
-//      println(token.getMorph)
-      for (topic <- topics) {
-        var termScore = this.distMatrix.get(topic).map{kv => {
-            kv.get(token.getMorph).getOrElse[Double](0)
-          }
-        }.foldLeft(0: Double)(_.toDouble + _.toDouble)
-        result.put(topic, termScore)
-      }
-    })
-    result
-  }
-
-  def getTpicScore(sentence: String, topic: String) = {
-    val topicTerms = this.distMatrix.get(topic)
-
-    val tokens = komoran.analyze(sentence).getTokenList.asScala
-    tokens.map(token => {
-      topicTerms.getOrElse(token, 0)
-    }).foreach(println)
-
-  }
 
   def init() = {
 //    val topics = Seq("경제", "사건", "대통령", "주식", "화폐", "화폐", "날씨", "북한", "이재명", "금리", "연봉", "코로나", "외계")
-    topics.foreach(initCosData)
-
-    println("Initialized Topic Size : " + distMatrix.size)
-    distMatrix.foreach{case(k,v) =>
-      {
-        println(k)
-        for (elem <- v) {
-          println(elem)
-        }
-        println("-----------------")
-      }
-    }
+    topics.foreach(saveCosData)
   }
 
-  private[this] def initCosData(topicWord: String) = {
+  // distance 값 추출
+  val getTermDistance = udf{ (rvsim: Double, vari: Double) =>
+    val distPow = math.pow(rvsim, 2)
+    math.exp(-1 * distPow / (10 * math.sqrt(vari)))
+  }
+
+  private[this] def saveCosData(topicWord: String) = {
     import spark.implicits._
 
-
-    val res = model.findSynonyms(topicWord, 5)
+    val res = model.findSynonyms(topicWord, 100)
     val exRes = res.withColumn("rvsim", revertDouble($"similarity"))
-    exRes show
+      .withColumn("base_term", typedLit(topicWord))
+    val v : Double = exRes.select(variance($"rvsim")).first().getAs[Double](0).toDouble
 
-    val vAvg = exRes.select(avg($"rvsim")).first().getAs[Double](0).toDouble
-    println("AVG => " + vAvg)
+    val allDf = exRes.withColumn("dist", getTermDistance($"rvsim", lit(v)))
 
-    val v = exRes.select(variance($"rvsim")).first().getAs[Double](0).toDouble
-    println("Variance => " + v)
+//    allDf show
 
-    var idx = 1
-    val mapDist1 = mutable.Map[String, Double]()
+    val dbAll = allDf.withColumnRenamed("base_term", "BASE_TERM")
+      .withColumnRenamed("word", "COMP_TERM")
+      .withColumnRenamed("dist", "DIST_VAL")
+      .withColumn("GRP_TS", typedLit(System.currentTimeMillis()))
 
-//    val prop = new Properties()
-//    prop.put("user", "root")
-//    prop.put("password", "18651865")
+    val dbAll2 = dbAll.select("BASE_TERM", "COMP_TERM", "DIST_VAL", "GRP_TS")
 
-    for(row <- exRes) {
-      var distPow = math.pow(row.getAs[Double](2).toFloat, 2)
-      var weight = math.exp(-1 * distPow / (10 * math.sqrt(v)))
-//      println(idx + "\t" + row.mkString(", ") + "==> w:" + weight)
-      mapDist1 update (row.getAs[String](0).toString , weight)
-    }
+    dbAll2 show
 
-//    exRes.withColumn("BASE_WORD", Column.apply[String])
+    println("Write Data to DB.Table ------------------------")
 
+    val prop = new Properties()
+    prop.put("user", "root")
+    prop.put("password", "18651865")
 
-//    this.distMatrix.put(topicWord, mapDist1)
+    dbAll2.write.mode(SaveMode.Append).jdbc("jdbc:mysql://localhost:3306/horus?" +
+          "useUnicode=true&characterEncoding=utf8&useSSL=false",
+          "TERM_DIST", prop)
   }
-
-
 
   def main(args: Array[String]): Unit = {
     println("Run Topic Classifier based on Word2vec ..")
-//    analyzeTopic("가나다라 테스트 바하무트 ..")
-    initCosData("코로나")
-//    init()
-//    getTpicScore("[속보] 日, 신규 확진 20만명 돌파…17개 도부현에서 역대 최다 경신", "코로나")
+//    saveCosData("코로나")
+    init
   }
+
 }
