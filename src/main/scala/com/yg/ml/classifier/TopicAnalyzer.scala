@@ -22,14 +22,16 @@ object TopicAnalyzer {
     .master("local")
     .getOrCreate()
 
-  val model = Word2VecModel.load("data/w2vNews2Cont_100_8")
+  val model = Word2VecModel.load("data/w2vNews2Cont_v200_m8_w7_it8")
   val topics = Seq("경제", "사건", "대통령", "주식", "화폐", "사건",
-    "날씨", "북한", "이재명", "금리", "연봉", "코로나", "러시아", "IT")
+    "날씨", "북한", "이재명", "금리", "연봉", "코로나", "러시아", "IT",
+    "중국", "미국", "수소", "원유", "휘발유", "디젤")
 
   val revertDouble: UserDefinedFunction = udf((v: Double) => 1 - v)
 
   def init() = {
-    topics.distinct.foreach(saveCosData)
+    val ts = System.currentTimeMillis
+    topics.distinct.foreach(topic => saveCosData(topic, ts))
   }
 
   // distance 값 추출
@@ -38,10 +40,10 @@ object TopicAnalyzer {
     math.exp(-1 * distPow / (10 * math.sqrt(vari)))
   }
 
-  private[this] def saveCosData(topicWord: String) = {
+  private[this] def saveCosData(topicWord: String, ts: Long) = {
     import spark.implicits._
 
-    val res = model.findSynonyms(topicWord, 100)
+    val res = model.findSynonyms(topicWord, 200)
     val exRes = res.withColumn("rvsim", revertDouble($"similarity"))
       .withColumn("base_term", typedLit(topicWord))
     val v : Double = exRes.select(variance($"rvsim")).first().getAs[Double](0).toDouble
@@ -53,7 +55,7 @@ object TopicAnalyzer {
     val dbAll = allDf.withColumnRenamed("base_term", "BASE_TERM")
       .withColumnRenamed("word", "COMP_TERM")
       .withColumnRenamed("dist", "DIST_VAL")
-      .withColumn("GRP_TS", typedLit(System.currentTimeMillis()))
+      .withColumn("GRP_TS", typedLit(ts))
 
     val dbAll2 = dbAll.select("BASE_TERM", "COMP_TERM", "DIST_VAL", "GRP_TS")
 
