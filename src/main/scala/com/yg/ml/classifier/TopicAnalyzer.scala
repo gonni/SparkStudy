@@ -25,7 +25,8 @@ object TopicAnalyzer {
   val model = Word2VecModel.load("data/w2vNews2Cont_v200_m8_w7_it8")
   val topics = Seq("경제", "사건", "대통령", "주식", "화폐", "사건",
     "날씨", "북한", "이재명", "금리", "연봉", "코로나", "러시아", "IT",
-    "중국", "미국", "수소", "원유", "휘발유", "디젤")
+    "중국", "미국", "수소", "원유", "휘발유", "디젤", "물가", "부동산",
+    "에너지", "공포", "전쟁")
 
   val revertDouble: UserDefinedFunction = udf((v: Double) => 1 - v)
 
