@@ -2,7 +2,7 @@ package com.yg.streaming
 
 import org.slf4j.LoggerFactory
 
-object CrawledNewsProcessing extends SparkStreamingInit {
+object SocketDataSample extends SparkStreamingInit {
   val logger = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]): Unit = {
