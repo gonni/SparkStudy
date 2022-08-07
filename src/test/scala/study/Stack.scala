@@ -1,4 +1,4 @@
-package com.yg.study
+package study
 
 class Stack[+T] {
   def push[S >: T](elem: S): Stack[S] = new Stack[S] {

@@ -20,27 +20,32 @@ object Influx22Sample {
   def main(args: Array[String]): Unit = {
     println("Active System at " + new File(".").getAbsolutePath)
 
-//    writeSomething
+    writeSomething
 
     readSomething
   }
 
   def writeSomething: Unit = {
-    val client = InfluxDBClientFactory.create()
+    // You can generate a Token from the "Tokens Tab" in the UI
+    val token = "5nWBmnhyUFbfF3q3F_yAfr4Wklis0HQT0UFKU2qf3z29bbsGMjPxYBeP34oz__byN8aSmS4hYud2zlR8tewDrA=="
+    val org = "NA"
+    val bucket = "hell"
 
-    val writeApi: WriteApi = client.makeWriteApi(WriteOptions.builder().flushInterval(5000).build())
-    val point = Point
-      .measurement("HellDb04")
-      .addTag("host", "server04")
-      .addTag("subKey", "abcd1234#")
-      .addField("value", (Math.random() * 100).intValue())
-      .addField("val2", (Math.random() * 100).intValue())
+    val client = InfluxDBClientScalaFactory.create("http://localhost:8086", token.toCharArray, org)
 
-    println(s"DataPoint to be added : ${point.toLineProtocol}")
-    writeApi.writePoint(point)
-
-    client.close()
-    system.terminate()
+//    /*val writeApi: WriteApi = client.makeWriteApi(WriteOptions.builder().flushInterval(5000).build())
+//    val point = Point
+//      .measurement("HellDb04")
+//      .addTag("host", "server04")
+//      .addTag("subKey", "abcd1234#")
+//      .addField("value", (Math.random() * 100).intValue())
+//      .addField("val2", (Math.random() * 100).intValue())
+//
+//    println(s"DataPoint to be added : ${point.toLineProtocol}")
+//    writeApi.writePoint(point)
+//
+//    client.close()
+//    system.terminate()*/
   }
 
   def readSomething: Unit = {

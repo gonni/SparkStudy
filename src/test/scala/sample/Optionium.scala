@@ -1,4 +1,4 @@
-package com.yg.sample
+package sample
 
 //sealed trait Option[+A]
 //case class Some[+A](get: A) extends Option[A]
