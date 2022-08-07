@@ -2,15 +2,7 @@ package com.yg.streaming
 import com.yg.tsdb.InfluxClient
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL
 import kr.co.shineware.nlp.komoran.core.Komoran
-import kr.co.shineware.nlp.komoran.model.Token
-import slick.jdbc.MySQLProfile.api._
-
 import scala.collection.JavaConverters._
-import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL
-import kr.co.shineware.nlp.komoran.core.Komoran
-import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
-
 
 class HangleTokenizer extends Serializable {
   val komoran = new Komoran(DEFAULT_MODEL.LIGHT)
@@ -21,7 +13,7 @@ class HangleTokenizer extends Serializable {
   }
 
   def arrayNouns(sentence: String) = {
-
+    komoran.analyze(sentence).getNouns.asScala
   }
 }
 
@@ -29,20 +21,15 @@ object HangleTokenizer {
   def apply() : HangleTokenizer = new HangleTokenizer
 }
 
-
 object CrawledProcessing extends SparkStreamingInit {
 
   def main(args: Array[String]): Unit = {
     println("Active System ..")
-//    val db : Database = Database.forURL(
-//      url ="jdbc:mysql://192.168.35.123:3306/horus?useSSL=false", //?enabledTLSProtocols=TLSv1.2
-//      user="root",
-//      password="18651865",
-//      driver = "com.mysql.jdbc.Driver")
 
     val anchors = ssc.receiverStream(new MySqlSourceReceiver)
     val words = anchors.flatMap(anchor => {
-      HangleTokenizer().arrayTokens(anchor)
+//      HangleTokenizer().arrayTokens(anchor)
+      HangleTokenizer().arrayNouns(anchor)
     })
 
 //    val words = anchors.flatMap(_.split(" "))
