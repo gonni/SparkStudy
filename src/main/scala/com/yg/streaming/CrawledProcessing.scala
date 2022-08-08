@@ -23,29 +23,50 @@ object HangleTokenizer {
 
 object CrawledProcessing extends SparkStreamingInit {
 
-  def main(args: Array[String]): Unit = {
-    println("Active System ..")
-
-    val anchors = ssc.receiverStream(new MySqlSourceReceiver)
+  def processCrawled(seedId : Long) = {
+    val anchors = ssc.receiverStream(new MySqlSourceReceiver(seedId))
     val words = anchors.flatMap(anchor => {
-//      HangleTokenizer().arrayTokens(anchor)
       HangleTokenizer().arrayNouns(anchor)
     })
 
-//    val words = anchors.flatMap(_.split(" "))
-    // Count each word in each batch
     val pairs = words.map(word => (word, 1))
     val wordCounts = pairs.reduceByKey(_ + _)
 
-    // Print the first ten elements of each RDD generated in this DStream to the console
     wordCounts.print
-//    wordCounts.foreachRDD((a, b) => {println(a + "->" + b)})
+
     wordCounts.foreachRDD(rdd => {
       rdd.foreach(tf => {
-//        println(tf._1 + " --> " + tf._2)
-        InfluxClient.writeTf(1L, tf._1, tf._2)
+        InfluxClient.writeTf(seedId, tf._1, tf._2)
       })
     })
+
+  }
+
+  def main(args: Array[String]): Unit = {
+    println("Active System ..")
+
+    processCrawled(9L)
+
+//    val anchors = ssc.receiverStream(new MySqlSourceReceiver(Seq(9L)))
+//    val words = anchors.flatMap(anchor => {
+////      HangleTokenizer().arrayTokens(anchor)
+//      HangleTokenizer().arrayNouns(anchor)
+//    })
+//
+////    val words = anchors.flatMap(_.split(" "))
+//    // Count each word in each batch
+//    val pairs = words.map(word => (word, 1))
+//    val wordCounts = pairs.reduceByKey(_ + _)
+//
+//    // Print the first ten elements of each RDD generated in this DStream to the console
+//    wordCounts.print
+////    wordCounts.foreachRDD((a, b) => {println(a + "->" + b)})
+//    wordCounts.foreachRDD(rdd => {
+//      rdd.foreach(tf => {
+////        println(tf._1 + " --> " + tf._2)
+//        InfluxClient.writeTf(1L, tf._1, tf._2)
+//      })
+//    })
 
     ssc.start()
     ssc.awaitTermination()
