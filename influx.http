@@ -47,12 +47,14 @@ Accept: application/csv
 Content-Type: application/vnd.flux
 
 from(bucket:"tfStudySample")
-|> range(start: -10h)
-|> filter(fn: (r) => r._measurement == "term_tf")
+|> range(start: -3h)
+|> filter(fn: (r) => r._measurement == "term_tf" and r._field == "tf")
 |> sum()
-|> sort(columns: ["_value"], desc:true)
-|> limit(n: 5)
+|> filter(fn: (r) => r._value > 500)
+|> sort(columns: ["_value"])
+|> limit(n: 3)
 
 ###
+
 
 

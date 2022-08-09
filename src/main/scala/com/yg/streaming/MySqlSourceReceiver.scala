@@ -83,10 +83,14 @@ class MySqlSourceReceiver(val seedNo : Long) extends Receiver[String](StorageLev
 
         val res = DbUtil.getLatestContextFrom(seedNo, latestCrawlNo)
         println(s"Count of crawled data : ${res.size} for ${seedNo}")
-        DbUtil.getLatestContextFrom(seedNo, latestCrawlNo).foreach(dt => {
-          println(dt.getOrElse("NULL"))
-          store(dt.getOrElse("NULL"))
-        })
+//        DbUtil.getLatestContextFrom(seedNo, latestCrawlNo).foreach(dt => {
+//          println(dt.getOrElse("NULL"))
+//          store(dt.getOrElse("NULL"))
+//        })
+
+        val mergedRes = DbUtil.getLatestContextFrom(seedNo, latestCrawlNo).mkString("\n\n")
+        println(mergedRes)
+        store(mergedRes)
 
         latestCrawlNo = DbUtil.latestCrawlNo(seedNo)
         println(s"Update Point ${latestCrawlNo}")

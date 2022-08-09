@@ -22,37 +22,76 @@ object InfluxClient extends Serializable {
 
   val client = InfluxDBClientScalaFactory.create("http://localhost:8086", token.toCharArray, org, bucket)
 
-  def main(args: Array[String]): Unit = {
+  def fluxQuery(fluxQuery : String) = {
+    val result = client.getQueryScalaApi().query(fluxQuery)
+//    val res = result.map(raw => TermCount(raw.getValueByKey("term").toString, raw.getValue.toString.toLong))
 
+//    val converted = Seq[TermCount]()
+//    Await.result(result.runForeach(raw => {
+//      converted :+ TermCount(raw.getValueByKey("term").toString, raw.getValue.toString.toLong)
+//    }), Duration.Inf)
+//
+//    converted.foreach(println)
+    var conv = Seq[TermCount]()
+    Await.result(result.runForeach(f => {
+      conv = conv :+ TermCount(f.getValueByKey("term").toString, f.getValue.toString.toLong)
+//      println("value =>" + f.getValueByKey("term") + "--" + f.getValue)
+    }), Duration.Inf)
+
+//    conv.foreach(println)
+
+    conv.sortBy(-_.count).take(10).foreach(println)
+
+  }
+
+  case class TermCount(term: String, count: Long)
+
+  def fluxQuery2(queryStr: String) = {
+
+  }
+
+  def main(args: Array[String]): Unit = {
+    val query =
+      """
+        |from(bucket:"tfStudySample")
+        ||> range(start: -3h)
+        ||> filter(fn: (r) => r._measurement == "term_tf" and r._field == "tf")
+        ||> sum()
+        ||> filter(fn: (r) => r._value > 0)
+        ||> sort(columns: ["_value"])
+        ||> limit(n: 3)
+        |""".stripMargin
+
+    fluxQuery(query)
 
     //
     // Use a Data Point to write data
     //
-    val point = Point
-      .measurement("mem")
-      .addTag("host", "host1")
-      .addField("used_percent", 3.43234543)
-      .time(Instant.now(), WritePrecision.NS)
-
-    val sourcePoint = Source.single(point)
-    val sinkPoint = client.getWriteScalaApi.writePoint()
-    val materializedPoint = sourcePoint.toMat(sinkPoint)(Keep.right)
-    Await.result(materializedPoint.run(), Duration.Inf)
-
-    println("Successfully completed ..")
-
-    //
-    // Use POJO and corresponding class to write data
-    //
-    val mem = new Mem()
-    mem.host = "host1"
-    mem.used_percent = 22.43234543
-    mem.time = Instant.now
-
-    val sourcePOJO = Source.single(mem)
-    val sinkPOJO = client.getWriteScalaApi.writeMeasurement()
-    val materializedPOJO = sourcePOJO.toMat(sinkPOJO)(Keep.right)
-    Await.result(materializedPOJO.run(), Duration.Inf)
+//    val point = Point
+//      .measurement("mem")
+//      .addTag("host", "host1")
+//      .addField("used_percent", 3.43234543)
+//      .time(Instant.now(), WritePrecision.NS)
+//
+//    val sourcePoint = Source.single(point)
+//    val sinkPoint = client.getWriteScalaApi.writePoint()
+//    val materializedPoint = sourcePoint.toMat(sinkPoint)(Keep.right)
+//    Await.result(materializedPoint.run(), Duration.Inf)
+//
+//    println("Successfully completed ..")
+//
+//    //
+//    // Use POJO and corresponding class to write data
+//    //
+//    val mem = new Mem()
+//    mem.host = "host1"
+//    mem.used_percent = 22.43234543
+//    mem.time = Instant.now
+//
+//    val sourcePOJO = Source.single(mem)
+//    val sinkPOJO = client.getWriteScalaApi.writeMeasurement()
+//    val materializedPOJO = sourcePOJO.toMat(sinkPOJO)(Keep.right)
+//    Await.result(materializedPOJO.run(), Duration.Inf)
 
     client.close()
     system.terminate()
