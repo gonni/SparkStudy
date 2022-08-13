@@ -1,1 +1,6 @@
-컬링	  NNP
+컬링	NNP
+윤석렬	NNP
+이준석	NNP
+비대위	NNP
+검수완박	NNP
+데칼코마니	NNP

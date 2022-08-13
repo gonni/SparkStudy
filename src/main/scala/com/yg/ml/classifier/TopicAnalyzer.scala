@@ -12,7 +12,7 @@ import java.util.Properties
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.asScalaBufferConverter
 import scala.reflect.internal.util.TableDef.Column
-
+//SparkApp
 // 각 토픽별로 Score를 산출하는 모듈 - 경제, 사건, 대통령, 주식, 화폐, 코인, 날씨, 북한, 이재명, 금리, 연봉, 코로나, 손흥민
 object TopicAnalyzer {
   case class TopicScore(topic: String, score: Double)

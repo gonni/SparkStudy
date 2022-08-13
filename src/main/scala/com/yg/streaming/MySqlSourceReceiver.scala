@@ -57,10 +57,6 @@ class MySqlSourceReceiver(val seedNo : Long) extends Receiver[String](StorageLev
 
   var latestCrawlNo = 0L
 
-//  def appedTargetSeed(seedId: Long) = {
-//    targetSeeds = targetSeeds :+ seedId
-//  }
-
   override def onStart(): Unit = {
     new Thread("MysqlSt") {
       override def run(): Unit = {
@@ -76,17 +72,8 @@ class MySqlSourceReceiver(val seedNo : Long) extends Receiver[String](StorageLev
   private def createGetData(): Unit = {
     while(!isStopped) {
       try {
-
-//        val allCont = DbUtil.getLatestContextFrom(21L, latestCrawlNo).map(_.getOrElse("null")).mkString("\n\n")
-//        println("crawled-->" + allCont)
-//         store(allCont)
-
         val res = DbUtil.getLatestContextFrom(seedNo, latestCrawlNo)
         println(s"Count of crawled data : ${res.size} for ${seedNo}")
-//        DbUtil.getLatestContextFrom(seedNo, latestCrawlNo).foreach(dt => {
-//          println(dt.getOrElse("NULL"))
-//          store(dt.getOrElse("NULL"))
-//        })
 
         val mergedRes = DbUtil.getLatestContextFrom(seedNo, latestCrawlNo).mkString("\n\n")
         println(mergedRes)

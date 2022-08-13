@@ -40,17 +40,6 @@ object Word2vecSample {
         Seq()
       }
     }
-
-    //    if(sentence != null) {
-    //      val analyzed = komoran.analyze(sentence)
-    //      if(analyzed != null && analyzed.getTokenList != null) {
-    //        analyzed.getTokenList.asScala.map(token => token.getMorph)
-    //      } else {
-    //        Seq()
-    //      }
-    //    } else {
-    //      Seq()
-    //    }
   }
 
   def createModel = {
