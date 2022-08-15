@@ -14,3 +14,5 @@
 이철규	NNP
 아이브	NNP
 테마송	NNP
+국민의힘	NNP
+국민의 힘	NNP

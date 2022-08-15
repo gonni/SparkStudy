@@ -9,6 +9,6 @@ object AnalyzerTester {
     val komoran = new Komoran(DEFAULT_MODEL.LIGHT)
     komoran.setUserDic("./myDic.txt")
 
-    komoran.analyze("아이브,日 정식 데뷔전부터 후지TV 테마송부터 공연·프로모션 성공적").getNouns.asScala.foreach(println)
+    komoran.analyze("국민의 힘 청와대,日 정식 데뷔전부터 후지TV 테마송부터 공연·프로모션 성공적").getNouns.asScala.foreach(println)
   }
 }

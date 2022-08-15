@@ -7,7 +7,6 @@ import scala.collection.JavaConverters._
 class HangleTokenizer extends Serializable {
   val komoran = new Komoran(DEFAULT_MODEL.LIGHT)
   komoran.setUserDic("./myDic.txt")
-
   def arrayTokens(sentence : String) = {
     val tokens = komoran.analyze(sentence).getTokenList.asScala.map(_.getMorph)
     tokens
