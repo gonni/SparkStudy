@@ -21,7 +21,7 @@ object GoMF {
     import spark.implicits._
 
 //    val ratings = spark.read.textFile("/Users/a1000074/dev/works/SparkStudy/data/sample_movielens_ratings.txt")
-val ratings = spark.read.textFile("data/sample_movielens_ratings.txt")
+    val ratings = spark.read.textFile("data/sample_movielens_ratings.txt")
       .map(parseRating)
       .toDF()
     val Array(training, test) = ratings.randomSplit(Array(0.8, 0.2))
